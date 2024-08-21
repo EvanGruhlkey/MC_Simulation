@@ -15,10 +15,10 @@ def get_data(stocks, start, end): # data imported from yahoo finance
         covMatrix = returns.var() 
     return meanReturns, covMatrix
 
-stockList = ['TSLA', 'ENVX', 'CLPT', 'EOSE', 'VOO', 'PGY']
+stockList = ['VOO','TSLA']
 stocks = [stock for stock in stockList]
 endDate = dt.datetime.now()
-startDate = endDate - dt.timedelta(days=300)
+startDate = endDate - dt.timedelta(days=6000)
 
 meanReturns, covMatrix = get_data(stocks, startDate, endDate)
 
@@ -26,10 +26,10 @@ meanReturns, covMatrix = get_data(stocks, startDate, endDate)
 
 if isinstance(meanReturns, np.float64):  # Single stock case
     weights = np.array([1.0])  
-    meanReturns = np.array([meanReturns])  # Convert meanReturns to an array
+    meanReturns = np.array([meanReturns])  
 else:  # Multiple stocks case
     weights = np.random.random(len(meanReturns))
-    weights /= np.sum(weights)  # Normalize weights 
+    weights /= np.sum(weights)  
 
 #print(weights)
 
@@ -48,16 +48,15 @@ mean = []
 for m in range(0, mc_sims):
     Z = np.random.normal(size=(time, len(weights)))  # Random normal values for simulation
     if len(weights) > 1:
-        L = np.linalg.cholesky(covMatrix)  # Cholesky decomposition for covariance matrix
+        L = np.linalg.cholesky(covMatrix)  # Cholesky decomposition for covariance matrix (mutiple stocks)
         dailyReturns = meanMatrix + np.inner(L, Z)
         portfolio_sims[:, m] = np.cumprod(np.inner(weights, dailyReturns.T) + 1) * initialValue
     else:
-        # For a single stock, handle the shapes directly
+        # For a single stock
         dailyReturns = meanMatrix.flatten() + Z.flatten() * np.sqrt(covMatrix)
         portfolio_sims[:, m] = np.cumprod(dailyReturns + 1) * initialValue
-    mean = [portfolio_sims[time-1]]
 
-mean = np.mean(mean)
+mean = np.mean(portfolio_sims[-1, :])
 plt.plot(portfolio_sims)
 plt.ylabel("Portfolio Value ($)")
 plt.xlabel('Days')
@@ -65,7 +64,7 @@ plt.title("MC Simulation")
 
 print(f'Your projected portfolio value in {time} days is ${mean:.2f}')
 if mean >= initialValue:
-    print(f'This is a {(mean-initialValue)/initialValue*100:.2f}% increase from the initial investment')
+    print(f'This is a {(mean-initialValue)/initialValue*100:.2f}% increase from your initial investment')
 else:
-    print(f'This is a {(mean-initialValue)/initialValue*100:.2f}% decrease from the initial investment')
+    print(f'This is a {(mean-initialValue)/initialValue*100:.2f}% decrease from your initial investment')
 plt.show()
