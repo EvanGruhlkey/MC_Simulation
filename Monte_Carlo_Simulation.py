@@ -4,7 +4,8 @@ import matplotlib.pyplot as plt
 import datetime as dt
 import yfinance as yf
 
-def get_data(stocks, start, end): # data imported from yahoo finance
+# data imported from yahoo finance
+def get_data(stocks, start, end): 
     stockData = yf.download(stocks, start, end)
     stockData = stockData['Close']
     returns = stockData.pct_change()
@@ -24,10 +25,12 @@ meanReturns, covMatrix = get_data(stocks, startDate, endDate)
 
 #print(meanReturns)
 
-if isinstance(meanReturns, np.float64):  # Single stock case
+if isinstance(meanReturns, np.float64):  
+    # Single stock case
     weights = np.array([1.0])  
     meanReturns = np.array([meanReturns])  
-else:  # Multiple stocks case
+else:  
+    # Multiple stocks case
     weights = np.random.random(len(meanReturns))
     weights /= np.sum(weights)  
 
@@ -46,9 +49,11 @@ initialValue = 10000
 mean = []
 
 for m in range(0, mc_sims):
-    Z = np.random.normal(size=(time, len(weights)))  # Random normal values for simulation
+    Z = np.random.normal(size=(time, len(weights)))  
+    # Random normal values for simulation
     if len(weights) > 1:
-        L = np.linalg.cholesky(covMatrix)  # Cholesky decomposition for covariance matrix (mutiple stocks)
+        L = np.linalg.cholesky(covMatrix)  
+        # Cholesky decomposition for covariance matrix (mutiple stocks)
         dailyReturns = meanMatrix + np.inner(L, Z)
         portfolio_sims[:, m] = np.cumprod(np.inner(weights, dailyReturns.T) + 1) * initialValue
     else:
